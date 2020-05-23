@@ -18,6 +18,17 @@ use Illuminate\Support\Facades\Route;
 //    return $request->user();
 //});
 
-Route::post('login', 'Api\V1\AuthController@login');
-Route::post('logout', 'Api\V1\AuthController@logout');
-Route::post('refresh', 'Api\V1\AuthController@refresh');
+Route::group(['prefix' => 'auth'], function () {
+    Route::post('login', 'Api\V1\AuthController@login');
+    Route::post('refresh', 'Api\V1\AuthController@refresh');
+    Route::group(['middleware' => 'jwt.auth'], function () {
+        Route::post('logout', 'Api\V1\AuthController@logout');
+    });
+});
+
+Route::group(['prefix' => 'v1'], function () {
+    Route::group(['middleware' => 'jwt.auth'], function () {
+        Route::post('/post/create', 'Api\v1\PostController@store')->name('create_post');
+        Route::delete('/post/{id}/delete', 'Api\v1\PostController@destroy')->name('delete_post');
+    });
+});
